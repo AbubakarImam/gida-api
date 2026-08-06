@@ -8,6 +8,11 @@ full breakdown: what the Firebase version got wrong, why each technology here
 was chosen, the data model, the complete API surface, and a phased migration
 plan that doesn't require rewriting the frontend in one shot.
 
+For a guided, code-annotated walkthrough of the implementation itself — JWTs,
+authentication vs. authorization, Prisma, Docker, Jest, all explained against
+the real source — see the
+[**Implementation Walkthrough**](https://claude.ai/code/artifact/f0fc893b-0e38-4955-8348-4b03969cf457).
+
 ## What's here
 
 - **Auth module** — register/login (email+password), Google OAuth token
