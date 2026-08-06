@@ -1,11 +1,12 @@
 # Registry API
 
-NestJS + PostgreSQL backend for the `realtor-clone` marketplace, replacing its
-Firebase (Auth + Firestore + Storage) backend. See
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full breakdown: what
-the Firebase version got wrong, why each technology here was chosen, the data
-model, the complete API surface, and a phased migration plan that doesn't
-require rewriting the frontend in one shot.
+NestJS + PostgreSQL backend for
+[**realtor-clone**](https://github.com/AbubakarImam/realtor-clone), the
+Registry marketplace frontend, replacing its Firebase (Auth + Firestore +
+Storage) backend. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the
+full breakdown: what the Firebase version got wrong, why each technology here
+was chosen, the data model, the complete API surface, and a phased migration
+plan that doesn't require rewriting the frontend in one shot.
 
 ## What's here
 
