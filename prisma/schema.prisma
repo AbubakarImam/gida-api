@@ -1,0 +1,105 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum ListingType {
+  RENT
+  SALE
+}
+
+enum ListingStatus {
+  AVAILABLE
+  PENDING
+  SOLD
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String? // null for Google-only accounts
+  name         String
+  googleId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listings      Listing[]
+  sentMessages  Message[]
+
+  @@map("users")
+}
+
+model Listing {
+  id     String        @id @default(uuid())
+  owner  User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
+
+  type   ListingType
+  status ListingStatus @default(AVAILABLE)
+
+  name        String
+  description String
+
+  bedrooms  Int
+  bathrooms Int
+  parking   Boolean @default(false)
+  furnished Boolean @default(false)
+
+  address String
+
+  // PostGIS point, SRID 4326 (WGS 84 — standard GPS lat/lng). Unsupported type:
+  // Prisma doesn't model PostGIS geography natively, so raw SQL (via
+  // `$queryRaw`) reads/writes this column — see ListingsService.findNear().
+  location Unsupported("geography(Point, 4326)")?
+
+  // Prices stored as integer cents to avoid floating-point rounding on money.
+  regularPriceCents     Int
+  discountedPriceCents  Int?
+  isOffer               Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images   ListingImage[]
+  messages Message[]
+
+  @@index([type, status])
+  @@index([isOffer])
+  @@map("listings")
+}
+
+model ListingImage {
+  id        String   @id @default(uuid())
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+
+  url          String
+  thumbnailUrl String?
+  position     Int // 0 = cover image
+
+  createdAt DateTime @default(now())
+
+  @@index([listingId, position])
+  @@map("listing_images")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId  String
+
+  body String
+
+  createdAt DateTime @default(now())
+
+  @@index([listingId])
+  @@map("messages")
+}
