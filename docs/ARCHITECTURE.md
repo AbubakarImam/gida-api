@@ -76,10 +76,10 @@ its data.
                                    └──┬────────┬──────────┬──┘
                                       │        │          │
                         ┌─────────────▼──┐ ┌───▼────┐ ┌───▼─────────┐
-                        │ PostgreSQL 16    │ │ Redis  │ │ S3-compatible│
-                        │ + PostGIS        │ │(cache, │ │ object store │
-                        │ (Prisma ORM)     │ │ rate-  │ │ (images)     │
-                        │                  │ │ limit) │ │              │
+                        │ PostgreSQL 16    │ │ Redis  │ │ Cloudflare R2│
+                        │ + PostGIS        │ │(cache, │ │ (S3-compat.  │
+                        │ (Prisma ORM)     │ │ rate-  │ │  object store,│
+                        │                  │ │ limit) │ │  images)     │
                         └──────────────────┘ └────────┘ └──────────────┘
 ```
 
@@ -91,7 +91,7 @@ its data.
 | Database | **PostgreSQL 16 + PostGIS** | Relational integrity (a listing *must* belong to a real user — enforced by a foreign key, not convention); PostGIS gives real "listings within N km" queries instead of a hard-coded map pin. |
 | ORM | **Prisma** | Schema-first, generates fully-typed queries, and `prisma migrate` gives versioned, reviewable schema history — the `bedroom`/`bedrooms` drift becomes impossible because the client is generated from one schema. |
 | Auth | **Passport (JWT + Google OAuth2 strategies)**, access + refresh tokens, `argon2` password hashing | Drop-in replacement for Firebase Auth's two flows (email/password, Google) without the vendor lock-in; refresh-token rotation is something Firebase Auth also does under the hood, so behavior parity is straightforward. |
-| File storage | **S3-compatible object storage** (AWS S3, or Cloudflare R2 / MinIO if you want to self-host) via presigned upload URLs | Same "browser uploads directly, server never proxies the bytes" shape you have today with Firebase Storage — just not locked to Firebase. |
+| File storage | **Cloudflare R2** (S3-compatible) via presigned upload URLs, using a generic `@aws-sdk/client-s3` client so local dev can point at MinIO instead | Same "browser uploads directly, server never proxies the bytes" shape you have today with Firebase Storage — just not locked to Firebase. R2 specifically: no egress fees on the images this app serves, and its S3-compatible API means zero custom SDK code — only `.env` differs between local MinIO and production R2. |
 | Cache / rate limiting | **Redis** | Session/refresh-token denylist, `@nestjs/throttler` storage, hot-listing query cache. |
 | Image processing | **sharp**, run as a background step after upload confirmation | Generates a thumbnail + a display-size variant so the listing grid stops shipping full-resolution originals. |
 
@@ -217,10 +217,10 @@ Notes:
   endpoint becomes real.
 - **Upload is still two calls, browser does the heavy lifting** — `presign`
   returns a short-lived signed PUT URL, the browser uploads the file bytes
-  directly to object storage (same shape as today's `uploadBytesResumable`),
-  then `confirm` tells the API the upload finished so it can validate the
-  object exists, run `sharp` thumbnailing, and write the `ListingImage` row.
-  The API never proxies image bytes.
+  directly to R2 (same shape as today's `uploadBytesResumable`), then
+  `confirm` tells the API the upload finished so it can download the object,
+  run `sharp` thumbnailing, re-upload the thumbnail, and write the
+  `ListingImage` row. The API never proxies the original upload's bytes.
 
 ---
 
@@ -265,7 +265,7 @@ Notes:
    (Firebase Admin SDK, one-off Node script), transform into the new schema —
    this is also where the `bedroom`/`bedrooms` drift gets resolved once,
    centrally, instead of per-record silently. Re-upload each listing's images
-   from Firebase Storage to the new object store, rewriting `imgUrls[0]` as
+   from Firebase Storage to the R2 bucket, rewriting `imgUrls[0]` as
    `position: 0`.
 3. **Introduce an API client layer in the frontend** (`src/api/*.ts`,
    `fetch`/`axios`-based) that mirrors the current Firestore call sites
@@ -298,14 +298,15 @@ never requires a maintenance window or a big-bang rewrite.
 structure, `prisma/schema.prisma` (the full data model above, compilable),
 Auth module (register/login/Google/refresh, JWT + Google Passport strategies,
 guards), Users module, Listings module (full CRUD, DTO validation, ownership
-guard, cursor pagination, geo-radius query), Uploads module (S3 presign/confirm
-flow), Messages module, global validation/exception-filter/config wiring,
-Docker Compose for Postgres + Redis, and a starter e2e test.
+guard, cursor pagination, geo-radius query), Uploads module (S3-compatible
+presign/confirm flow, MinIO for local dev), Messages module, global
+validation/exception-filter/config wiring, Docker Compose for Postgres +
+Redis + MinIO, and a starter e2e test.
 
 **Deliberately left as follow-up work**, since they depend on decisions only
-you can make (which object-store provider, which email provider for password
-reset, whether to keep `mailto:` short-term): the actual S3/R2 bucket
-provisioning and credentials, an email-sending integration
+you can make (which email provider for password reset, whether to keep
+`mailto:` short-term): real Cloudflare R2 credentials provisioned outside
+`.env.example`, an email-sending integration
 (SendGrid/Postmark/SES) for `forgot-password`, the Firestore→Postgres backfill
 script itself (it needs your live Firestore export), and the frontend
 `src/api/*` client layer described in migration step 3.

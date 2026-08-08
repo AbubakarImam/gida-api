@@ -36,8 +36,8 @@ the [**Flow Atlas**](https://claude.ai/code/artifact/e6a9c01c-f7d5-409d-8695-5f3
   `bedroom`/`bedrooms` field-name drift that exists in the current Firestore
   data (see Architecture doc §1).
 - Docker Compose for Postgres (with the PostGIS extension), Redis, and MinIO
-  (a local S3-compatible store, so you don't need real AWS credentials to run
-  this locally).
+  (a local S3-compatible store, so you don't need real cloud credentials to
+  run this locally).
 
 ## Running it locally
 
@@ -53,6 +53,20 @@ MinIO's console is at `http://localhost:9001` (login: `gidalisting` /
 `gidalisting123`) — create a bucket named `gidalisting-listings` (or whatever
 you set `S3_BUCKET` to) before testing the upload flow.
 
+### Going to production: Cloudflare R2
+
+R2's API is S3-compatible, so nothing in `uploads.service.ts` changes — only
+the `.env` values do:
+
+1. Create a bucket in the Cloudflare dashboard under **R2**.
+2. **R2 → Manage API Tokens** — create a token scoped to that bucket; this
+   gives you `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY`.
+3. `S3_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com`,
+   `S3_REGION=auto`.
+4. `S3_PUBLIC_URL` — either the bucket's `r2.dev` public URL (enable
+   "Public Development URL" on the bucket) or a custom domain you've mapped
+   to it.
+
 ## Testing
 
 ```bash
@@ -65,8 +79,8 @@ npm run test:e2e     # e2e tests — point DATABASE_URL at a throwaway database 
 These need decisions only the project owner can make, so they're deliberately
 left as follow-ups rather than guessed at:
 
-- Real object-storage credentials (AWS S3 / Cloudflare R2) for anything past
-  local development with MinIO.
+- Real Cloudflare R2 credentials (or AWS S3) for anything past local
+  development with MinIO.
 - An email provider (SendGrid/Postmark/SES) to actually send the
   `forgot-password` reset email — the endpoint exists in the architecture doc
   but isn't wired to a sender in this scaffold.
