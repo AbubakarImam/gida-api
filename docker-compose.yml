@@ -5,15 +5,15 @@ services:
     image: postgis/postgis:16-3.4-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: registry
-      POSTGRES_PASSWORD: registry
-      POSTGRES_DB: registry
+      POSTGRES_USER: gidalisting
+      POSTGRES_PASSWORD: gidalisting
+      POSTGRES_DB: gidalisting
     ports:
       - "5432:5432"
     volumes:
-      - registry_postgres_data:/var/lib/postgresql/data
+      - gidalisting_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U registry"]
+      test: ["CMD-SHELL", "pg_isready -U gidalisting"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -29,14 +29,14 @@ services:
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: registry
-      MINIO_ROOT_PASSWORD: registry123
+      MINIO_ROOT_USER: gidalisting
+      MINIO_ROOT_PASSWORD: gidalisting123
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - registry_minio_data:/data
+      - gidalisting_minio_data:/data
 
 volumes:
-  registry_postgres_data:
-  registry_minio_data:
+  gidalisting_postgres_data:
+  gidalisting_minio_data:

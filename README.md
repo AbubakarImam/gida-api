@@ -1,8 +1,8 @@
-# Registry API
+# GidaListing API
 
 NestJS + PostgreSQL backend for
 [**realtor-clone**](https://github.com/AbubakarImam/realtor-clone), the
-Registry marketplace frontend, replacing its Firebase (Auth + Firestore +
+GidaListing marketplace frontend, replacing its Firebase (Auth + Firestore +
 Storage) backend. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the
 full breakdown: what the Firebase version got wrong, why each technology here
 was chosen, the data model, the complete API surface, and a phased migration
@@ -49,9 +49,9 @@ npm run prisma:migrate        # creates the database schema
 npm run start:dev             # http://localhost:3333
 ```
 
-MinIO's console is at `http://localhost:9001` (login: `registry` /
-`registry123`) — create a bucket named `registry-listings` (or whatever you
-set `S3_BUCKET` to) before testing the upload flow.
+MinIO's console is at `http://localhost:9001` (login: `gidalisting` /
+`gidalisting123`) — create a bucket named `gidalisting-listings` (or whatever
+you set `S3_BUCKET` to) before testing the upload flow.
 
 ## Testing
 

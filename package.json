@@ -1,7 +1,7 @@
 {
-  "name": "registry-api",
+  "name": "gidalisting-api",
   "version": "0.1.0",
-  "description": "Registry API — NestJS + PostgreSQL backend for the realtor-clone marketplace",
+  "description": "GidaListing API — NestJS + PostgreSQL backend for the realtor-clone marketplace",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

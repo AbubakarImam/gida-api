@@ -1,4 +1,4 @@
-# Registry API — Backend Reinvention Breakdown
+# GidaListing API — Backend Reinvention Breakdown
 
 This document is the detailed plan for replacing `realtor-clone`'s Firebase backend
 (Auth + Firestore + Storage, all called directly from the browser) with a real
