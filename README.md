@@ -13,6 +13,10 @@ authentication vs. authorization, Prisma, Docker, Jest, all explained against
 the real source — see the
 [**Implementation Walkthrough**](https://claude.ai/code/artifact/f0fc893b-0e38-4955-8348-4b03969cf457).
 
+For a diagram of every request the API handles — register, login, each
+listing operation, both halves of an image upload, messages, profile — see
+the [**Flow Atlas**](https://claude.ai/code/artifact/e6a9c01c-f7d5-409d-8695-5f3354727d4d).
+
 ## What's here
 
 - **Auth module** — register/login (email+password), Google OAuth token
