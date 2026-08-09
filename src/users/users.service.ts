@@ -15,6 +15,20 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * The public-facing shape of a user — name only, never email. Used to show
+   * "Contact <name>" on a listing without leaking every viewer's address to
+   * anyone who opens the page.
+   */
+  async findPublicProfile(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
   async update(id: string, dto: UpdateUserDto) {
     return this.prisma.user.update({
       where: { id },

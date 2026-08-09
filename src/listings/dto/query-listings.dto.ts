@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   Min,
 } from 'class-validator';
@@ -22,6 +23,11 @@ export class QueryListingsDto {
   @IsOptional()
   @IsBooleanString()
   offer?: string;
+
+  /** Filter to one owner's listings — e.g. a Profile page's "my listings". */
+  @IsOptional()
+  @IsUUID()
+  ownerId?: string;
 
   /** "lat,lng" — combine with radiusKm for a PostGIS-backed radius search. */
   @IsOptional()

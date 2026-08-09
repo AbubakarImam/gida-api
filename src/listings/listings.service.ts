@@ -62,6 +62,7 @@ export class ListingsService {
       ...(query.type && { type: query.type }),
       ...(query.status && { status: query.status }),
       ...(query.offer !== undefined && { isOffer: query.offer === 'true' }),
+      ...(query.ownerId && { ownerId: query.ownerId }),
     };
 
     const listings = await this.prisma.listing.findMany({
